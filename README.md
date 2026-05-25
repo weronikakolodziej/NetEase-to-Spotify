@@ -3,7 +3,8 @@
 A lightweight Google Chrome extension designed to seamlessly migrate your liked songs and playlists from NetEase Cloud Music (`music.163.com`) directly to Spotify.
 
 ## Setup
-Navigate to `background.js` and fill in the values for `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`
+1. Clone this repo
+2. Navigate to `background.js` and fill in the values for `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`
 
 
 ## 📦 Chrome Installation
