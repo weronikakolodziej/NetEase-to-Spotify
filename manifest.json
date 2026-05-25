@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "NetEase → Spotify Transfer",
+  "version": "1.0",
+  "description": "Przenieś polubione piosenki i playlisty z NetEase Music na Spotify",
+
+  "permissions": [
+    "storage",
+    "identity"
+  ],
+
+  "host_permissions": [
+    "https://music.163.com/*",
+    "https://interface.music.163.com/*",
+    "https://api.spotify.com/*",
+    "https://accounts.spotify.com/*"
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "NetEase → Spotify"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://music.163.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "oauth2": {
+    "client_id": "TWÓJ_SPOTIFY_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": []
+  }
+
+  // "icons": {
+  //   "16": "icons/icon16.png",
+  //   "48": "icons/icon48.png",
+  //   "128": "icons/icon128.png"
+  // }
+}

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetEase → Spotify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #121212;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2a2a2a;
+      --green: #1db954;
+      --green-dim: rgba(29,185,84,0.15);
+      --green-hover: #1ed760;
+      --red: #df9ba1;
+      --text: #ffffff;
+      --text-sub: #b3b3b3;
+      --text-muted: #6a6a6a;
+      --warn: #f59b00;
+    }
+
+    body {
+      width: 360px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Figtree', sans-serif;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 18px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-mark svg { width: 18px; height: 18px; fill: #000; }
+    .logo-text {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo-text .from { color: var(--red); }
+    .logo-text .arrow { color: var(--text-muted); font-weight: 400; font-size: 12px; }
+    .logo-text .to { color: var(--green); }
+    .version {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--surface2);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── Auth ── */
+    .auth-section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .auth-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 8px;
+      background: var(--surface);
+      margin-bottom: 6px;
+      border: 1px solid transparent;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .auth-card.connected { border-color: rgba(29,185,84,0.25); background: rgba(29,185,84,0.06); }
+    .auth-card.error { border-color: rgba(233,20,41,0.25); background: rgba(233,20,41,0.05); }
+
+    .auth-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .auth-card.connected .auth-dot { background: var(--green); box-shadow: 0 0 8px rgba(29,185,84,0.6); }
+    .auth-card.error .auth-dot { background: var(--red); box-shadow: 0 0 8px rgba(233,20,41,0.5); }
+
+    .auth-info { flex: 1; min-width: 0; }
+    .auth-name { font-size: 13px; font-weight: 600; }
+    .auth-sub { font-size: 11px; color: var(--text-sub); margin-top: 1px; font-family: 'DM Mono', monospace; }
+
+    .btn-small {
+      font-family: 'Figtree', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .btn-green { background: var(--green); color: #000; }
+    .btn-green:hover { background: var(--green-hover); transform: scale(1.02); }
+    .btn-outline { background: transparent; color: var(--text-sub); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: #fff; color: #fff; }
+
+    #netease-hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      line-height: 1.6;
+      margin-top: 2px;
+    }
+    #netease-hint a { color: var(--red); text-decoration: none; }
+    #netease-hint a:hover { text-decoration: underline; }
+
+    /* ── Wybór (Wspólne style dla Liked Songs i Playlist) ── */
+    #selection-section { padding: 14px 20px; border-bottom: 1px solid var(--border); display: none; }
+    .sel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .sel-actions { display: flex; gap: 10px; }
+    .sel-action-btn {
+      font-family: 'Figtree', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .sel-action-btn:hover { color: var(--green); }
+
+    /* Główny kontener wiersza – taki sam dla wszystkiego */
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      background: var(--surface);
+      margin-bottom: 5px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .item-row:hover { background: var(--surface2); }
+    .item-row.checked { border-color: rgba(29,185,84,0.3); background: rgba(29,185,84,0.07); }
+
+    .item-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-sub { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-top: 1px; }
+
+    .checkbox {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .checked .checkbox { background: var(--green); border-color: var(--green); }
+    .checkbox::after {
+      content: '';
+      width: 8px; height: 5px;
+      border-left: 2px solid #000;
+      border-bottom: 2px solid #000;
+      transform: rotate(-45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+    .checked .checkbox::after { opacity: 1; }
+
+    /* Kontener na playlisty i cała sekcja przewijania */
+    #selection-content { display: flex; flex-direction: column; }
+    #playlist-list { max-height: 150px; overflow-y: auto; }
+    #playlist-list::-webkit-scrollbar { width: 3px; }
+    #playlist-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    #selection-loading { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); text-align: center; padding: 14px 0; }
+
+    /* ── Transfer btn ── */
+    .transfer-section { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    #btn-transfer {
+      width: 100%;
+      padding: 13px;
+      font-family: 'Figtree', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      border: none;
+      border-radius: 99px;
+      cursor: pointer;
+      background: var(--green);
+      color: #000;
+      transition: all 0.2s;
+    }
+    #btn-transfer:hover:not(:disabled) { background: var(--green-hover); transform: scale(1.01); }
+    #btn-transfer:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    #btn-transfer.running { animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(29,185,84,0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(29,185,84,0); }
+    }
+
+    /* ── Log ── */
+    .log-section { padding: 12px 20px 14px; }
+    .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    #progress-bar-wrap { height: 2px; background: var(--surface2); border-radius: 99px; margin-bottom: 10px; overflow: hidden; display: none; }
+    #progress-bar { height: 100%; background: var(--green); border-radius: 99px; width: 0%; transition: width 0.4s ease; }
+    #log {
+      height: 110px;
+      overflow-y: auto;
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+    #log::-webkit-scrollbar { width: 3px; }
+    #log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .log-entry { display: flex; gap: 8px; }
+    .log-entry .ts { color: var(--text-muted); flex-shrink: 0; }
+    .log-entry.success .msg { color: var(--green); }
+    .log-entry.warn .msg { color: var(--warn); }
+    .log-entry.error .msg { color: var(--red); }
+    .log-entry.info .msg { color: var(--text-sub); }
+    #empty-log { color: var(--text-muted); text-align: center; padding: 18px 0; font-family: 'DM Mono', monospace; font-size: 11px; }
+
+    /* ── Nieznalezione ── */
+    #not-found-section { border-top: 1px solid var(--border); padding: 12px 20px 14px; display: none; }
+    .not-found-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .not-found-title { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--warn); }
+    .not-found-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); }
+    #not-found-list {
+      height: 95px;
+      overflow-y: auto;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid rgba(245,155,0,0.15);
+      padding: 5px 4px;
+    }
+    #not-found-list::-webkit-scrollbar { width: 3px; }
+    #not-found-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .nf-item { padding: 4px 10px; border-radius: 6px; }
+    .nf-item:hover { background: rgba(255,255,255,0.04); }
+    .nf-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nf-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nf-tag { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 4px; background: rgba(245,155,0,0.12); color: var(--warn); margin-left: 5px; vertical-align: middle; }
+    .btn-copy {
+      margin-top: 8px;
+      width: 100%;
+      font-family: 'Figtree', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px;
+      border-radius: 99px;
+      border: 1px solid rgba(245,155,0,0.3);
+      background: transparent;
+      color: var(--warn);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-copy:hover { background: rgba(245,155,0,0.08); }
+    .btn-copy.copied { color: var(--green); border-color: rgba(29,185,84,0.3); }
+
+    /* ── Modal ── */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #modal-overlay.visible { display: flex; }
+    #modal {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      width: 100%;
+    }
+    .modal-icon { font-size: 22px; margin-bottom: 10px; }
+    .modal-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+    .modal-body { font-size: 12px; color: var(--text-sub); line-height: 1.6; margin-bottom: 18px; }
+    .modal-body strong { color: var(--warn); font-weight: 600; }
+    .modal-btns { display: flex; gap: 8px; }
+    .modal-btn {
+      flex: 1;
+      padding: 11px;
+      font-family: 'Figtree', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 99px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .modal-btn.skip { background: var(--surface); color: var(--text-sub); border: 1px solid var(--border); }
+    .modal-btn.skip:hover { border-color: #fff; color: #fff; }
+    .modal-btn.go { background: var(--green); color: #000; }
+    .modal-btn.go:hover { background: var(--green-hover); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+  </div>
+  <div class="logo-text">
+    <span class="from">NetEase</span>
+    <span class="arrow">→</span>
+    <span class="to">Spotify</span>
+  </div>
+  <span class="version">v1.0</span>
+</header>
+
+<div class="auth-section">
+  <div class="section-label">Connections</div>
+  <div id="netease-card" class="auth-card">
+    <div class="auth-dot"></div>
+    <div class="auth-info">
+      <div class="auth-name">NetEase Music</div>
+      <div class="auth-sub" id="netease-sub">checking...</div>
+    </div>
+  </div>
+  <div id="netease-hint" style="display:none"></div>
+  <div id="spotify-card" class="auth-card" style="margin-top:6px">
+    <div class="auth-dot"></div>
+    <div class="auth-info">
+      <div class="auth-name">Spotify</div>
+      <div class="auth-sub" id="spotify-sub">not connected</div>
+    </div>
+    <button class="btn-small btn-green" id="btn-spotify-login">Login</button>
+  </div>
+</div>
+
+<div id="selection-section">
+  <div class="sel-header">
+    <div class="section-label" style="margin:0">What to transfer</div>
+    <div class="sel-actions">
+      <button class="sel-action-btn" id="btn-select-all">select all</button>
+      <button class="sel-action-btn" id="btn-deselect-all">deselect</button>
+    </div>
+  </div>
+  <div id="selection-loading">Loading playlists...</div>
+  <div id="selection-content" style="display:none">
+    <div class="item-row checked" id="liked-row">
+      <div class="item-icon">♥</div>
+      <div class="item-info">
+        <div class="item-name">Liked songs</div>
+        <div class="item-sub" id="liked-sub">— songs</div>
+      </div>
+      <div class="checkbox"></div>
+    </div>
+    <div id="playlist-list"></div>
+  </div>
+</div>
+
+<div class="transfer-section">
+  <button id="btn-transfer" disabled>Start transfer</button>
+</div>
+
+<div class="log-section">
+  <div class="log-header">
+    <span class="section-label" style="margin:0">Log</span>
+    <span id="progress-text" style="color:var(--text-muted);font-size:10px;font-family:'DM Mono',monospace"></span>
+  </div>
+  <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+  <div id="log"><div id="empty-log">— no activity —</div></div>
+</div>
+
+<div id="not-found-section">
+  <div class="not-found-header">
+    <span class="not-found-title">Not found on Spotify</span>
+    <span class="not-found-count" id="not-found-count"></span>
+  </div>
+  <div id="not-found-list"></div>
+  <button class="btn-copy" id="btn-copy">Copy to clipboard</button>
+</div>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Playlist already exists</div>
+    <div class="modal-body">
+      <strong id="modal-pl-name"></strong> already exists on your Spotify.<br>Do you want to create a duplicate?
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn skip" id="modal-skip">Skip</button>
+      <button class="modal-btn go" id="modal-continue">Create duplicate</button>
+    </div>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
